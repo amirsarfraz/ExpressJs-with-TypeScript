@@ -1,19 +1,34 @@
 import React, { useState } from "react";
 import api from "../../services/api.ts";
+import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post("/auth/login", { email, password });
-      localStorage.setItem("token", res.data.token);
-      alert("Login successful!");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Invalid credentials");
+      const response = await fetch("http://localhost:3000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        navigate("/users"); // ✅ Redirects now work!
+      } else {
+        alert("Login failed: " + data.message);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Something went wrong");
     }
   };
 

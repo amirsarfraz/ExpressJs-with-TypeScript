@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./components/Auth/Register.tsx";
 import Login from "./components/Auth/Login.tsx";
 import "./index.css"; // ✅ Import Tailwind CSS here
+import UserTable from "./components/Dashboard/UserTable.tsx";
 
 const App: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/users" element={<UserTable />} />
         {/* Add other routes here */}
       </Routes>
     </Router>
