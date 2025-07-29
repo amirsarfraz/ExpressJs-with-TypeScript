@@ -12,7 +12,7 @@ interface User {
 
 const roles = ["user", "manager", "admin"];
 
-const UserTable: React.FC = () => {
+const UserTable = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [editUserId, setEditUserId] = useState<string | null>(null);

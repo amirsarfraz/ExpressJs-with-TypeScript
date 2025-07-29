@@ -26,7 +26,7 @@ export const login = async (req: Request, res: Response) => {
   const user = await userRepo.findOneBy({ email });
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  // const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(password, user.password);
   // if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
   const token = jwt.sign({ id: user.id, role: user.role }, "your-secret-key", {

@@ -6,7 +6,6 @@ export const getUsers = async (_: Request, res: Response) => {
   const users = await AppDataSource.getRepository(User).find();
   res.json(users);
 };
-
 export const createUser = async (req: Request, res: Response) => {
   const { username, email, password, role } = req.body;
   const userRepo = AppDataSource.getRepository(User);
@@ -15,6 +14,7 @@ export const createUser = async (req: Request, res: Response) => {
   res.status(201).json(user);
 };
 export const updateUser = async (req: Request, res: Response) => {
+  
   const userRepo = AppDataSource.getRepository(User);
   const { id } = req.params;
   const { username, email, password, role } = req.body;
