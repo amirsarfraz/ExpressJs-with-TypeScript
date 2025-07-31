@@ -11,6 +11,7 @@ import "./index.css";
 import UserTable from "./components/Dashboard/UserTable.tsx";
 
 const App = () => {
+  
   return (
     <Router>
       <Routes>

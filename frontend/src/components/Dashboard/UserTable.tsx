@@ -1,24 +1,31 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../Navbar/Navbar.tsx";
 import axios from "axios";
-import ConfirmModal from "../Model/ConfirmModal.tsx";
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-}
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchUsers,
+  updateUser,
+  deleteUser as deleteUserAction,
+  User,
+} from "../../redux/usersSlice.ts";
+import { RootState, AppDispatch } from "../../redux";
+import ConfirmModal from "../Model/ConfirmModal.tsx";
+import SimpleToast from "../Model/SimpleSnackbar.tsx";
 
 const roles = ["user", "manager", "admin"];
 
 const UserTable = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [editUserId, setEditUserId] = useState<string | null>(null);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<"success" | "error" | "info">(
+    "success"
+  );
+  const dispatch = useDispatch<AppDispatch>();
+  const { users, loading } = useSelector((state: RootState) => state.users);
 
   const openModal = (userId: string) => {
     setSelectedUserId(userId);
@@ -26,19 +33,15 @@ const UserTable = () => {
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/users")
-      .then((res) => res.json())
-      .then((data) => {
-        setUsers(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch users:", err);
-        setLoading(false);
-      });
-  }, []);
+    dispatch(fetchUsers());
+  }, [dispatch]);
 
   const handleEditClick = (user: User) => {
+    if (user.role === "user") {
+      setToastMessage("Editing users with role 'user' is not allowed.");
+      setToastType("error");
+      return;
+    }
     setEditUserId(user.id);
     setEditedUser({ ...user });
   };
@@ -51,43 +54,45 @@ const UserTable = () => {
   };
 
   const handleSaveClick = async (id: string) => {
-    try {
-      const res = await fetch(`http://localhost:3000/api/users/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editedUser),
-      });
+  try {
+    await dispatch(updateUser({ id, data: editedUser }));
+    setEditUserId(null);
+    setToastMessage("User updated successfully.");
+    setToastType("success");
+  } catch (err) {
+    console.error(err);
+    setToastMessage("Failed to update user.");
+    setToastType("error");
+  }
+};
 
-      if (!res.ok) throw new Error("Failed to update user");
-
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === id ? ({ ...user, ...editedUser } as User) : user
-        )
-      );
-      setEditUserId(null);
-    } catch (err) {
-      console.error(err);
-      alert("Update failed");
-    }
-  };
-  const deleteUser = async () => {
-    if (!selectedUserId) return;
-    try {
-      await axios.delete(`http://localhost:3000/api/users/${selectedUserId}`);
-      setUsers((prev) => prev.filter((u) => u.id !== selectedUserId));
-    } catch (err) {
-      console.error("Delete failed:", err);
-    }
-  };
+const deleteUser = async () => {
+  if (!selectedUserId) return;
+  try {
+    await dispatch(deleteUserAction(selectedUserId));
+    setIsModalOpen(false);
+    setToastMessage("User deleted successfully.");
+    setToastType("success");
+  } catch (err) {
+    console.error("Delete failed:", err);
+    setToastMessage("Delete failed.");
+    setToastType("error");
+  }
+};
 
   if (loading) return <p className="p-4">Loading...</p>;
 
   return (
     <>
       <Navbar />
+      {toastMessage && (
+        <SimpleToast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+
       <div className="p-4 overflow-x-auto">
         <h2 className="text-2xl font-bold mb-4">Registered Users</h2>
         <table className="min-w-full border border-gray-300">
@@ -133,17 +138,21 @@ const UserTable = () => {
                   </td>
                   <td className="border px-4 py-2">
                     {isEditing ? (
-                      <select
-                        value={editedUser.role || "user"}
-                        onChange={(e) => handleChange("role", e.target.value)}
-                        className="border px-2 py-1 w-full"
-                      >
-                        {roles.map((role) => (
-                          <option key={role} value={role}>
-                            {role.charAt(0).toUpperCase() + role.slice(1)}
-                          </option>
-                        ))}
-                      </select>
+                      editedUser.role === "user" ? (
+                        <span>{user.role}</span>
+                      ) : (
+                        <select
+                          value={editedUser.role || "user"}
+                          onChange={(e) => handleChange("role", e.target.value)}
+                          className="border px-2 py-1 w-full"
+                        >
+                          {roles.map((role) => (
+                            <option key={role} value={role}>
+                              {role.charAt(0).toUpperCase() + role.slice(1)}
+                            </option>
+                          ))}
+                        </select>
+                      )
                     ) : (
                       user.role
                     )}

@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../redux/userSlice.ts";
 
-const Register: React.FC = () => {
+const Register = () => {
+  const dispatch = useDispatch();
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -21,7 +24,17 @@ const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3000/api/auth/register", form);
+      const res = await axios.post(
+        "http://localhost:3000/api/auth/register",
+        form
+      );
+      dispatch(
+        setUser({
+          username: res.data.username,
+          email: res.data.email,
+          role: res.data.role,
+        })
+      );
       navigate("/login");
     } catch (err: any) {
       setError(err.response?.data?.message || "Something went wrong");

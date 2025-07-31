@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import api from "../../services/api.ts";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../redux/userSlice.ts";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,8 +23,19 @@ const Login = () => {
       });
 
       const data = await response.json();
+      console.log("data", data);
 
       if (response.ok) {
+        const user = {
+          username: data.username,
+          email: data.email,
+          role: data.role,
+        };
+        console.log("user", user);
+
+        // ✅ Update Redux state
+        dispatch(setUser(user));
+
         navigate("/users");
       } else {
         alert("Login failed: " + data.message);
