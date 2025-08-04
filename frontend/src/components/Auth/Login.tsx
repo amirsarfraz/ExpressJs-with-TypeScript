@@ -3,6 +3,7 @@ import api from "../../services/api.ts";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../redux/userSlice.ts";
+import { decodeToken } from "../../utils/jwt.ts";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -26,10 +27,12 @@ const Login = () => {
       console.log("data", data);
 
       if (response.ok) {
+        const decoded = decodeToken(data.token);
+        console.log("decoded token:", decoded);
         const user = {
-          username: data.username,
-          email: data.email,
-          role: data.role,
+          username: decoded.username || decoded.email.split("@")[0],
+          email: decoded.email,
+          role: decoded.role,
         };
         console.log("user", user);
 

@@ -12,6 +12,8 @@ import {
 import { RootState, AppDispatch } from "../../redux";
 import ConfirmModal from "../Model/ConfirmModal.tsx";
 import SimpleToast from "../Model/SimpleSnackbar.tsx";
+import Sidebar from "../Sidebar/Sidebar.tsx";
+import Footer from "../Footer/footer.tsx";
 
 const roles = ["user", "manager", "admin"];
 
@@ -54,148 +56,165 @@ const UserTable = () => {
   };
 
   const handleSaveClick = async (id: string) => {
-  try {
-    await dispatch(updateUser({ id, data: editedUser }));
-    setEditUserId(null);
-    setToastMessage("User updated successfully.");
-    setToastType("success");
-  } catch (err) {
-    console.error(err);
-    setToastMessage("Failed to update user.");
-    setToastType("error");
-  }
-};
+    try {
+      await dispatch(updateUser({ id, data: editedUser }));
+      setEditUserId(null);
+      setToastMessage("User updated successfully.");
+      setToastType("success");
+    } catch (err) {
+      console.error(err);
+      setToastMessage("Failed to update user.");
+      setToastType("error");
+    }
+  };
 
-const deleteUser = async () => {
-  if (!selectedUserId) return;
-  try {
-    await dispatch(deleteUserAction(selectedUserId));
-    setIsModalOpen(false);
-    setToastMessage("User deleted successfully.");
-    setToastType("success");
-  } catch (err) {
-    console.error("Delete failed:", err);
-    setToastMessage("Delete failed.");
-    setToastType("error");
-  }
-};
+  const deleteUser = async () => {
+    if (!selectedUserId) return;
+    try {
+      await dispatch(deleteUserAction(selectedUserId));
+      setIsModalOpen(false);
+      setToastMessage("User deleted successfully.");
+      setToastType("success");
+    } catch (err) {
+      console.error("Delete failed:", err);
+      setToastMessage("Delete failed.");
+      setToastType("error");
+    }
+  };
 
   if (loading) return <p className="p-4">Loading...</p>;
 
   return (
     <>
-      <Navbar />
-      {toastMessage && (
-        <SimpleToast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setToastMessage(null)}
-        />
-      )}
+      <div className="flex min-h-screen">
+        {/* Sidebar */}
+        <Sidebar />
 
-      <div className="p-4 overflow-x-auto">
-        <h2 className="text-2xl font-bold mb-4">Registered Users</h2>
-        <table className="min-w-full border border-gray-300">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border px-4 py-2 text-left">ID</th>
-              <th className="border px-4 py-2 text-left">Name</th>
-              <th className="border px-4 py-2 text-left">Email</th>
-              <th className="border px-4 py-2 text-left">Role</th>
-              <th className="border px-4 py-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => {
-              const isEditing = editUserId === user.id;
+        {/* Main content area */}
+        <div className="flex flex-col flex-1">
+          {/* Navbar */}
+          <Navbar />
 
-              return (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="border px-4 py-2">{user.id}</td>
-                  <td className="border px-4 py-2">
-                    {isEditing ? (
-                      <input
-                        value={editedUser.username || ""}
-                        onChange={(e) =>
-                          handleChange("username", e.target.value)
-                        }
-                        className="border px-2 py-1 w-full"
-                      />
-                    ) : (
-                      user.username
-                    )}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {isEditing ? (
-                      <input
-                        value={editedUser.email || ""}
-                        onChange={(e) => handleChange("email", e.target.value)}
-                        className="border px-2 py-1 w-full"
-                      />
-                    ) : (
-                      user.email
-                    )}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {isEditing ? (
-                      editedUser.role === "user" ? (
-                        <span>{user.role}</span>
-                      ) : (
-                        <select
-                          value={editedUser.role || "user"}
-                          onChange={(e) => handleChange("role", e.target.value)}
-                          className="border px-2 py-1 w-full"
-                        >
-                          {roles.map((role) => (
-                            <option key={role} value={role}>
-                              {role.charAt(0).toUpperCase() + role.slice(1)}
-                            </option>
-                          ))}
-                        </select>
-                      )
-                    ) : (
-                      user.role
-                    )}
-                  </td>
-                  <td className="border px-4 py-2 space-x-2">
-                    {isEditing ? (
-                      <button
-                        onClick={() => handleSaveClick(user.id)}
-                        className="bg-green-500 text-white px-3 py-1 rounded"
-                      >
-                        Save
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleEditClick(user)}
-                        className="bg-blue-500 text-white px-3 py-1 rounded"
-                      >
-                        Edit
-                      </button>
-                    )}
+          {/* Toast message */}
+          {toastMessage && (
+            <SimpleToast
+              message={toastMessage}
+              type={toastType}
+              onClose={() => setToastMessage(null)}
+            />
+          )}
 
-                    <button
-                      onClick={() => openModal(user.id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-
-                    {/* Only one modal outside the map loop */}
-                    {selectedUserId === user.id && (
-                      <ConfirmModal
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                        onConfirm={deleteUser}
-                        message="Are you sure you want to delete this user?"
-                      />
-                    )}
-                  </td>
+          {/* Page content */}
+          <main className="flex-1 p-4 overflow-x-auto bg-gray-50">
+            <h2 className="text-2xl font-bold mb-4">Registered Users</h2>
+            <table className="min-w-full border border-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border px-4 py-2 text-left">ID</th>
+                  <th className="border px-4 py-2 text-left">Name</th>
+                  <th className="border px-4 py-2 text-left">Email</th>
+                  <th className="border px-4 py-2 text-left">Role</th>
+                  <th className="border px-4 py-2 text-left">Actions</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {users.map((user) => {
+                  const isEditing = editUserId === user.id;
+
+                  return (
+                    <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="border px-4 py-2">{user.id}</td>
+                      <td className="border px-4 py-2">
+                        {isEditing ? (
+                          <input
+                            value={editedUser.username || ""}
+                            onChange={(e) =>
+                              handleChange("username", e.target.value)
+                            }
+                            className="border px-2 py-1 w-full"
+                          />
+                        ) : (
+                          user.username
+                        )}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {isEditing ? (
+                          <input
+                            value={editedUser.email || ""}
+                            onChange={(e) =>
+                              handleChange("email", e.target.value)
+                            }
+                            className="border px-2 py-1 w-full"
+                          />
+                        ) : (
+                          user.email
+                        )}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {isEditing ? (
+                          editedUser.role === "user" ? (
+                            <span>{user.role}</span>
+                          ) : (
+                            <select
+                              value={editedUser.role || "user"}
+                              onChange={(e) =>
+                                handleChange("role", e.target.value)
+                              }
+                              className="border px-2 py-1 w-full"
+                            >
+                              {roles.map((role) => (
+                                <option key={role} value={role}>
+                                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                                </option>
+                              ))}
+                            </select>
+                          )
+                        ) : (
+                          user.role
+                        )}
+                      </td>
+                      <td className="border px-4 py-2 space-x-2">
+                        {isEditing ? (
+                          <button
+                            onClick={() => handleSaveClick(user.id)}
+                            className="bg-green-500 text-white px-3 py-1 rounded"
+                          >
+                            Save
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleEditClick(user)}
+                            className="bg-blue-500 text-white px-3 py-1 rounded"
+                          >
+                            Edit
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => openModal(user.id)}
+                          className="bg-red-500 text-white px-3 py-1 rounded"
+                        >
+                          Delete
+                        </button>
+
+                        {selectedUserId === user.id && (
+                          <ConfirmModal
+                            isOpen={isModalOpen}
+                            onClose={() => setIsModalOpen(false)}
+                            onConfirm={deleteUser}
+                            message="Are you sure you want to delete this user?"
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </main>
+          {/* Footer */}
+          <Footer />
+        </div>
       </div>
     </>
   );

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux";
-import { setUser, clearUser } from "../../redux/userSlice.ts";;
+import { setUser, clearUser } from "../../redux/userSlice.ts";
 
 const Navbar = () => {
   const userEmail = useSelector((state: RootState) => state.user.email);
@@ -49,7 +49,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gray-800 p-4 text-white flex justify-between items-center">
+    <nav className="bg-gray-900 p-4 text-white flex justify-between items-center">
       <div className="flex items-center space-x-2">
         <img className="w-8 h-8" src="/crud-logo.ico" alt="logo" />
         <div className="text-xl font-bold">MyApp</div>
